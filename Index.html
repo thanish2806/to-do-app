@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TaskFlow - Modern Smart Todo & Voice Assistant application built with HTML5, CSS3, and JavaScript." />
+  <title>TaskFlow — Smart Voice Todo</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Unsupported TTS Warning (Hidden by default, shown if Web Speech API is absent) -->
+  <div id="ttsUnsupportedBanner" class="tts-unsupported-banner" style="display: none;" role="alert">
+    <div class="banner-content">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>Text-to-Speech is not supported in this browser. Please use Chrome, Edge, Safari, or Firefox for voice features.</span>
+    </div>
+    <button class="banner-close-btn" id="closeTtsBannerBtn" aria-label="Dismiss banner">&times;</button>
+  </div>
+
+  <div class="app-layout">
+    <!-- Mobile Header -->
+    <header class="mobile-top-header">
+      <div class="mobile-header-left">
+        <button id="mobileMenuBtn" class="icon-btn" aria-label="Toggle navigation menu">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="brand-logo-small">
+          <div class="logo-icon-wrap">
+            <svg class="icon logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m9 11 3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+          </div>
+          <span class="brand-name">TaskFlow</span>
+        </div>
+      </div>
+      <div class="mobile-header-actions">
+        <button id="mobileThemeToggleBtn" class="icon-btn" aria-label="Toggle theme">
+          <svg class="icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <button id="mobileAddBtn" class="btn btn-primary btn-sm" aria-label="Add task">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sidebar Backdrop for Mobile -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="logo-icon-wrap">
+            <svg class="icon logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m9 11 3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">TaskFlow</span>
+            <span class="brand-tag">Voice Assistant</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main task views">
+        <div class="nav-section-title">Views</div>
+        <ul class="nav-list" id="viewNavList">
+          <li>
+            <button class="nav-item active" data-filter="all">
+              <span class="nav-item-left">
+                <svg class="icon nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="9" y1="9" x2="15" y2="9"></line>
+                  <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+                <span>All Tasks</span>
+              </span>
+              <span class="badge" id="countAll">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-filter="today">
+              <span class="nav-item-left">
+                <svg class="icon nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Today</span>
+              </span>
+              <span class="badge" id="countToday">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-filter="upcoming">
+              <span class="nav-item-left">
+                <svg class="icon nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Upcoming</span>
+              </span>
+              <span class="badge" id="countUpcoming">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-filter="important">
+              <span class="nav-item-left">
+                <svg class="icon nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span>Important</span>
+              </span>
+              <span class="badge" id="countImportant">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-filter="completed">
+              <span class="nav-item-left">
+                <svg class="icon nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span>Completed</span>
+              </span>
+              <span class="badge" id="countCompleted">0</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="nav-section-title">Categories</div>
+        <ul class="nav-list" id="categoryNavList">
+          <li>
+            <button class="nav-item" data-category="work">
+              <span class="nav-item-left">
+                <span class="category-dot dot-work"></span>
+                <span>Work</span>
+              </span>
+              <span class="badge badge-subtle" id="countWork">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-category="personal">
+              <span class="nav-item-left">
+                <span class="category-dot dot-personal"></span>
+                <span>Personal</span>
+              </span>
+              <span class="badge badge-subtle" id="countPersonal">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-category="study">
+              <span class="nav-item-left">
+                <span class="category-dot dot-study"></span>
+                <span>Study</span>
+              </span>
+              <span class="badge badge-subtle" id="countStudy">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-category="shopping">
+              <span class="nav-item-left">
+                <span class="category-dot dot-shopping"></span>
+                <span>Shopping</span>
+              </span>
+              <span class="badge badge-subtle" id="countShopping">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-category="other">
+              <span class="nav-item-left">
+                <span class="category-dot dot-other"></span>
+                <span>Other</span>
+              </span>
+              <span class="badge badge-subtle" id="countOther">0</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer / Productivity Widget -->
+      <div class="sidebar-footer">
+        <div class="sidebar-productivity-card">
+          <div class="prod-card-header">
+            <span class="prod-card-title">Overall Progress</span>
+            <span class="prod-card-percent" id="sidebarProgressPct">0%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="sidebarProgressBar" style="width: 0%;"></div>
+          </div>
+          <div class="prod-card-stat" id="sidebarProgressText">0 of 0 tasks completed</div>
+        </div>
+
+        <div class="sidebar-actions-bar">
+          <button id="ttsSettingsBtn" class="btn btn-ghost btn-sm" title="Voice Assistant Settings">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <span>Voice</span>
+          </button>
+          <button id="dataManageBtn" class="btn btn-ghost btn-sm" title="Backup & Restore Data">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Data</span>
+          </button>
+          <button id="themeToggleBtn" class="btn btn-ghost btn-sm" title="Toggle Theme" aria-label="Toggle theme">
+            <svg class="icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+      <!-- Top App Header -->
+      <header class="app-header">
+        <div class="greeting-container">
+          <h1 class="greeting-title" id="greetingTitle">Good day</h1>
+          <p class="greeting-subtitle" id="currentDateSubtitle">Stay organized and get things done.</p>
+        </div>
+
+        <div class="header-action-toolbar">
+          <!-- Live Search Bar -->
+          <div class="search-box-wrapper">
+            <svg class="icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search tasks... (Press '/')" aria-label="Search tasks" />
+            <button id="clearSearchBtn" class="clear-search-btn" aria-label="Clear search" style="display: none;">&times;</button>
+            <span class="keyboard-hint">/</span>
+          </div>
+
+          <!-- Speech & Add Action Buttons -->
+          <div class="header-btn-group">
+            <button id="readAllBtn" class="btn btn-secondary" title="Read all pending tasks aloud">
+              <svg class="icon speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+              <span id="readAllBtnText">Read Tasks</span>
+            </button>
+
+            <button id="openAddModalBtn" class="btn btn-primary" title="Create a new task (Shortcut: N)">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add Task</span>
+              <span class="keyboard-hint-primary">N</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Productivity KPI Summary Grid -->
+      <section class="stats-grid" aria-label="Productivity summary">
+        <div class="stat-card">
+          <div class="stat-icon-wrap stat-total">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="9" x2="15" y2="9"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="kpiTotal">0</span>
+            <span class="stat-label">Total Tasks</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap stat-pending">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="kpiPending">0</span>
+            <span class="stat-label">Pending</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap stat-completed">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="kpiCompleted">0</span>
+            <span class="stat-label">Completed</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap stat-important">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="kpiImportant">0</span>
+            <span class="stat-label">Important</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Voice Playback Banner (Displays when speaking) -->
+      <section id="speechStatusBanner" class="speech-status-banner" style="display: none;" aria-live="polite">
+        <div class="speech-status-left">
+          <div class="soundwave-animator" aria-hidden="true">
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+            <span class="wave-bar"></span>
+          </div>
+          <div class="speech-status-text">
+            <span class="speech-status-label" id="speechStatusLabel">Reading tasks...</span>
+            <span class="speech-current-task" id="speechCurrentTaskText"></span>
+          </div>
+        </div>
+
+        <div class="speech-status-controls">
+          <button id="pauseSpeechBtn" class="btn btn-sm btn-ghost" title="Pause speech">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+            <span>Pause</span>
+          </button>
+          <button id="resumeSpeechBtn" class="btn btn-sm btn-ghost" style="display: none;" title="Resume speech">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Resume</span>
+          </button>
+          <button id="stopSpeechBtn" class="btn btn-sm btn-danger" title="Stop speech">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+            </svg>
+            <span>Stop</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Content Controls Bar: Title, Search Results feedback, Sort dropdown & Filters -->
+      <section class="task-section-header">
+        <div class="task-section-left">
+          <h2 class="view-heading" id="currentViewHeading">All Tasks</h2>
+          <span class="view-task-count" id="currentViewCount">0 tasks</span>
+        </div>
+
+        <div class="task-section-controls">
+          <!-- Segmented Filter for View: All / Active / Completed -->
+          <div class="segmented-filter" role="tablist" aria-label="Task completion filter">
+            <button class="segment-btn active" data-subfilter="all" role="tab" aria-selected="true">All</button>
+            <button class="segment-btn" data-subfilter="active" role="tab" aria-selected="false">Active</button>
+            <button class="segment-btn" data-subfilter="completed" role="tab" aria-selected="false">Completed</button>
+          </div>
+
+          <!-- Sort Select Dropdown -->
+          <div class="sort-dropdown-wrap">
+            <svg class="icon sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="21" y1="6" x2="3" y2="6"></line>
+              <line x1="17" y1="12" x2="7" y2="12"></line>
+              <line x1="13" y1="18" x2="11" y2="18"></line>
+            </svg>
+            <select id="sortSelect" class="sort-select" aria-label="Sort tasks">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="dueDate">Due Date</option>
+              <option value="priority">Priority (High to Low)</option>
+              <option value="alphabetical">Alphabetical (A-Z)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search Match Summary Info (shown only when searching) -->
+      <div id="searchFeedbackBar" class="search-feedback-bar" style="display: none;">
+        <span id="searchFeedbackText">Showing results for ""</span>
+        <button id="resetSearchFilterBtn" class="btn-text-link">Clear search</button>
+      </div>
+
+      <!-- Task Card List Container -->
+      <section class="task-list-container" id="taskListContainer" aria-label="Task list">
+        <!-- Dynamic Task Cards will be rendered here via script.js -->
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Add / Edit Task Modal -->
+  <div id="taskModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Create New Task</h3>
+        <button class="modal-close-btn" id="closeTaskModalBtn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <form id="taskForm" class="modal-form" novalidate>
+        <input type="hidden" id="taskIdField" value="" />
+
+        <!-- Title Field -->
+        <div class="form-group">
+          <label for="taskTitleInput" class="form-label">
+            Task Title <span class="required-star">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="taskTitleInput" 
+            class="form-control" 
+            placeholder="e.g., Complete quarterly review" 
+            maxlength="150" 
+            required 
+            autocomplete="off"
+          />
+          <div class="form-error" id="titleError">Please enter a task title.</div>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="taskDescInput" class="form-label">Description (Optional)</label>
+          <textarea 
+            id="taskDescInput" 
+            class="form-control form-textarea" 
+            rows="3" 
+            placeholder="Add details, notes, or sub-points..."
+            maxlength="600"
+          ></textarea>
+        </div>
+
+        <!-- Form Row: Due Date & Category -->
+        <div class="form-row">
+          <div class="form-group form-col">
+            <label for="taskDueDateInput" class="form-label">Due Date</label>
+            <input type="date" id="taskDueDateInput" class="form-control" />
+          </div>
+
+          <div class="form-group form-col">
+            <label for="taskCategorySelect" class="form-label">Category</label>
+            <select id="taskCategorySelect" class="form-control form-select">
+              <option value="work">Work</option>
+              <option value="personal">Personal</option>
+              <option value="study">Study</option>
+              <option value="shopping">Shopping</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Form Row: Priority Selector & Important Check -->
+        <div class="form-group">
+          <label class="form-label">Priority Level</label>
+          <div class="priority-radio-group" role="radiogroup" aria-label="Task priority">
+            <label class="priority-option priority-low">
+              <input type="radio" name="taskPriority" value="low" />
+              <span class="priority-badge-label">Low</span>
+            </label>
+            <label class="priority-option priority-medium">
+              <input type="radio" name="taskPriority" value="medium" checked />
+              <span class="priority-badge-label">Medium</span>
+            </label>
+            <label class="priority-option priority-high">
+              <input type="radio" name="taskPriority" value="high" />
+              <span class="priority-badge-label">High</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Mark as Important Checkbox -->
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label" for="taskImportantCheck">
+            <input type="checkbox" id="taskImportantCheck" class="custom-checkbox-input" />
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-text">Mark as Important (Star)</span>
+          </label>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelTaskModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveTaskSubmitBtn">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Voice Assistant Settings Modal -->
+  <div id="ttsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ttsModalTitle" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-header-icon-title">
+          <svg class="icon modal-head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <h3 class="modal-title" id="ttsModalTitle">Voice Assistant Settings</h3>
+        </div>
+        <button class="modal-close-btn" id="closeTtsModalBtn" aria-label="Close voice settings">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">Customize speech synthesis voice, playback rate, pitch, and output volume.</p>
+
+        <!-- Voice Selection Dropdown -->
+        <div class="form-group">
+          <label for="voiceSelect" class="form-label">Synthesizer Voice</label>
+          <select id="voiceSelect" class="form-control form-select">
+            <option value="">Loading browser voices...</option>
+          </select>
+          <small class="form-help-text">Populated dynamically from your browser's speech synthesis engine.</small>
+        </div>
+
+        <!-- Speech Rate Slider -->
+        <div class="form-group">
+          <div class="range-header">
+            <label for="rateRange" class="form-label">Speaking Rate (Speed)</label>
+            <span class="range-value-pill" id="rateValueDisplay">1.0x</span>
+          </div>
+          <input type="range" id="rateRange" min="0.5" max="2.0" step="0.1" value="1.0" class="range-slider" />
+          <div class="range-marks">
+            <span>0.5x</span>
+            <span>1.0x (Normal)</span>
+            <span>2.0x</span>
+          </div>
+        </div>
+
+        <!-- Pitch Slider -->
+        <div class="form-group">
+          <div class="range-header">
+            <label for="pitchRange" class="form-label">Voice Pitch</label>
+            <span class="range-value-pill" id="pitchValueDisplay">1.0</span>
+          </div>
+          <input type="range" id="pitchRange" min="0.5" max="2.0" step="0.1" value="1.0" class="range-slider" />
+          <div class="range-marks">
+            <span>Low</span>
+            <span>Natural</span>
+            <span>High</span>
+          </div>
+        </div>
+
+        <!-- Volume Slider -->
+        <div class="form-group">
+          <div class="range-header">
+            <label for="volumeRange" class="form-label">Volume</label>
+            <span class="range-value-pill" id="volumeValueDisplay">100%</span>
+          </div>
+          <input type="range" id="volumeRange" min="0.0" max="1.0" step="0.05" value="1.0" class="range-slider" />
+          <div class="range-marks">
+            <span>Mute</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer modal-footer-split">
+        <button type="button" class="btn btn-secondary" id="testVoiceBtn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span>Test Voice</span>
+        </button>
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-ghost" id="resetTtsBtn">Reset Defaults</button>
+          <button type="button" class="btn btn-primary" id="saveTtsModalBtn">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle" style="display: none;">
+    <div class="modal-card modal-card-sm">
+      <div class="modal-header modal-header-danger">
+        <div class="modal-header-icon-title">
+          <div class="danger-icon-badge">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </div>
+          <h3 class="modal-title" id="deleteModalTitle">Delete Task</h3>
+        </div>
+        <button class="modal-close-btn" id="closeDeleteModalBtn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-warning-text">Are you sure you want to permanently delete this task?</p>
+        <div class="delete-task-preview" id="deleteTaskPreviewTitle">Task Title</div>
+        <p class="delete-subtext">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Management Modal (Export / Import / Clear) -->
+  <div id="dataModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="dataModalTitle" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-header-icon-title">
+          <svg class="icon modal-head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <h3 class="modal-title" id="dataModalTitle">Data Management</h3>
+        </div>
+        <button class="modal-close-btn" id="closeDataModalBtn" aria-label="Close data management">&times;</button>
+      </div>
+
+      <div class="modal-body data-options-list">
+        <!-- Export Box -->
+        <div class="data-option-card">
+          <div class="data-option-info">
+            <div class="data-option-name">Export Backup</div>
+            <div class="data-option-desc">Download all your tasks, priorities, and categories as a clean JSON backup.</div>
+          </div>
+          <button id="exportJsonBtn" class="btn btn-secondary btn-sm">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export JSON</span>
+          </button>
+        </div>
+
+        <!-- Import Box -->
+        <div class="data-option-card">
+          <div class="data-option-info">
+            <div class="data-option-name">Import Tasks</div>
+            <div class="data-option-desc">Restore your tasks from a previous JSON backup file.</div>
+          </div>
+          <label class="btn btn-secondary btn-sm file-input-label">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>Import JSON</span>
+            <input type="file" id="importJsonFileInput" accept=".json,application/json" style="display: none;" />
+          </label>
+        </div>
+
+        <!-- Clear All Box -->
+        <div class="data-option-card data-option-danger">
+          <div class="data-option-info">
+            <div class="data-option-name">Clear All Data</div>
+            <div class="data-option-desc">Remove all tasks and reset local storage to clean state.</div>
+          </div>
+          <button id="clearAllTasksBtn" class="btn btn-danger btn-sm">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Clear All</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closeDataModalFooterBtn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Application Script -->
+  <script src="script.js"></script>
+</body>
+</html>
